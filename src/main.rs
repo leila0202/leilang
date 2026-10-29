@@ -7,7 +7,7 @@ type CharStream<'b,'a> = &'a mut std::iter::Peekable<std::str::Chars<'b>>;
 
 #[derive(Debug)]
 pub enum OpKind {
-    Equals,
+    Assign,
     Minus,
     Plus,
     Mul,
@@ -67,7 +67,7 @@ fn token_next(lexer: CharStream) -> Token {
 
             '=' => {
                 Token {
-                    kind: TokenKind::Op(OpKind::Equals),
+                    kind: TokenKind::Op(OpKind::Assign),
                     row: 0,
                     col: 0
                 }
@@ -130,7 +130,7 @@ fn token_next(lexer: CharStream) -> Token {
 
 
 fn main() {
-    let filepath  = "test.lei";
+    let filepath  = "tests/unknown.lei";
     let content= read_to_string(filepath).unwrap();
     let content = content.trim();
     let mut raw_lexer = content.chars().peekable();
