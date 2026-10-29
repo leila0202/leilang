@@ -2,6 +2,8 @@ use std::{fmt::format, fs::read_to_string};
 
 type CharStream<'b,'a> = &'a mut std::iter::Peekable<std::str::Chars<'b>>;
 
+
+
 #[derive(Debug)]
 pub enum OpKind {
     Equals,
@@ -17,7 +19,7 @@ pub enum TokenKind {
     Unknown(String),
     Op(OpKind),
     Colon,
-    Ident,
+    Ident(String),
     Space,
     Int(i64),
     Float(f64),
@@ -53,7 +55,7 @@ fn token_next(lexer: CharStream) -> Token {
                 } else {
                     println!("Line: {} Col: {}: invalid Newline token", 0, 0);
                     Token {
-                            kind: TokenKind::Newline,
+                            kind: TokenKind::Error,
                             row: 0,
                             col : 0
                         }
@@ -72,17 +74,41 @@ fn token_next(lexer: CharStream) -> Token {
                 let mut final_digit;
                 final_digit = c.to_string();
                 loop {
-                    let digit = lexer.peek();
-                    if !digit.unwrap().is_digit(10){
+                    if let Some(digit) = lexer.peek() {
+                        if !digit.is_digit(10){
+                            break;
+                        }
+                        final_digit += &digit.to_string();
+                        lexer.next();
+
+                    }
+                    else{
                         break;
                     }
-                    final_digit += &digit.unwrap().to_string();
-                    lexer.next();
                 }
                 
-                Token { kind: TokenKind::Int(final_digit.parse::<i64>().unwrap().clone()), row: 0, col: 0 }
+                Token { kind: TokenKind::Int(final_digit.parse::<i64>().unwrap()), row: 0, col: 0 }
             }
 
+            'A'..='Z' |'a'..='z' | '_'  => {
+                let mut final_char;
+                final_char = c.to_string();
+                loop {
+                    if let Some(char) = lexer.peek() {
+                        if !char.is_alphanumeric() && char != &'_'{
+                            break;
+                        }
+                        final_char += &char.to_string();
+                        lexer.next();
+
+                    }
+                    else{
+                        break;
+                    }
+                }
+                
+                Token { kind: TokenKind::Ident(final_char), row: 0, col: 0 }
+            }
             _ => {
                 return Token { kind: TokenKind::Unknown(c.to_string()), row: 0, col:  0};
             }
@@ -104,12 +130,13 @@ fn main() {
     loop {
         let token = token_next(lexer);
         match token.kind {
-            TokenKind::Eof => {
+           TokenKind::Eof => {
                 break;
             }
             _ => {
                 println!("{:?}", token);
             }
+             
         }
     }
 }
