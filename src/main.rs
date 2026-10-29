@@ -1,4 +1,5 @@
 use std::{fmt::format, fs::read_to_string};
+use std::collections::HashSet;
 
 type CharStream<'b,'a> = &'a mut std::iter::Peekable<std::str::Chars<'b>>;
 
@@ -34,6 +35,8 @@ struct Token {
     row: usize,
     col: usize,
 }
+
+const KEYWORDS: [&str;7] = ["int", "float", "if", "while", "for", "return", "char"];
 
 fn token_next(lexer: CharStream) -> Token {
 
@@ -106,8 +109,13 @@ fn token_next(lexer: CharStream) -> Token {
                         break;
                     }
                 }
-                
-                Token { kind: TokenKind::Ident(final_char), row: 0, col: 0 }
+                let kind;
+                if KEYWORDS.contains(&final_char.as_str()) {
+                    kind = TokenKind::Keyword(final_char);
+                } else {
+                    kind = TokenKind::Ident(final_char);
+                }
+                Token { kind: kind, row: 0, col: 0 }
             }
             _ => {
                 return Token { kind: TokenKind::Unknown(c.to_string()), row: 0, col:  0};
