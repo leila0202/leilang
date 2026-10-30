@@ -1,5 +1,6 @@
+use std::process::exit;
 use std::{fmt::format, fs::read_to_string};
-use std::collections::HashSet;
+use std::env;
 
 type CharStream<'b,'a> = &'a mut std::iter::Peekable<std::str::Chars<'b>>;
 
@@ -130,7 +131,12 @@ fn token_next(lexer: CharStream) -> Token {
 
 
 fn main() {
-    let filepath  = "tests/unknown.lei";
+    let args: Vec<String> = env::args().collect();
+    if args.len() <= 1 {
+        eprintln!("No input file was provided.");
+        exit(-1);
+    }
+    let filepath  = &args[1];
     let content= read_to_string(filepath).unwrap();
     let content = content.trim();
     let mut raw_lexer = content.chars().peekable();
