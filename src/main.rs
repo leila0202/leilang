@@ -2,8 +2,6 @@ use std::process::exit;
 use std::fs::read_to_string;
 use std::env;
 
-type CharStream<'b,'a> = &'a mut std::iter::Peekable<std::str::Chars<'b>>;
-
 
 
 #[derive(Debug)]
@@ -127,7 +125,7 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
                             col: col_old
                         }
                 } else {
-                    eprintln!("Error: {}:{}:{}: invalid Newline token", filepath, row_old, col_old);
+                    eprintln!("\x1b[31mError:\x1b[0m {}:{}:{}: invalid Newline token", filepath, row_old, col_old);
                     Token {
                             kind: TokenKind::Error,
                             row: row_old,
@@ -297,7 +295,7 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
                     
                     if let Some(digit) = lexer.iter.peek() {
                         if dot_count > 1 {
-                            eprintln!("Error: {}:{}:{} wrong formated float {}", filepath, row_old, col_old + final_digit.len() - 1, final_digit);
+                            eprintln!("\x1b[31mError:\x1b[0m {}:{}:{} wrong formated float {}", filepath, row_old, col_old + final_digit.len() - 1, final_digit);
                             return Token {
                             kind: TokenKind::Error,
                             row: row_old,
@@ -387,10 +385,10 @@ struct Lexer <'a>{
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() <= 1 {
-        eprintln!("No input file was provided.");
+        eprintln!("\x1b[33mInfo:\x1b[0m No input file was provided.");
         exit(-1);
     }
-    let filepath  = &args[1];
+    let filepath  = &args[1].replace("\\", "/");
     let content= read_to_string(filepath).unwrap();
     let content = content.trim();
     let mut lexer = Lexer {
@@ -413,3 +411,83 @@ fn main() {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+use std::fs::{read_dir, write};
+use std::fmt::Write;
+use std::iter::zip;
+
+use super::*;
+    const testpath: &str = "./tests";
+    #[test]
+    fn lex() {
+        let mut failed_tests: Vec<String> = vec![];
+        let mut result: String = "".to_string();
+        for file in read_dir(testpath).unwrap() {
+            
+            let filepath = file.unwrap().path();
+            let mut expected_path = filepath.clone();
+            expected_path.set_extension("expected");
+            
+            if filepath.extension().unwrap().to_str() != Some("lei") {
+                continue;
+            }
+            let filepath = filepath.into_string().unwrap().replace("\\", "/");
+            
+            let content = read_to_string(&filepath).unwrap();
+            let content = content.trim();
+            let mut lexer = Lexer {
+                iter: content.chars().peekable(),
+                col: 1,
+                row: 1
+            };
+            
+            loop {
+                let token = token_next(&mut lexer, &filepath);
+                match token.kind {
+                    TokenKind::Eof => {
+                        break;
+                    }
+                    _ => {
+                        writeln!(result, "{:?} located at {}:{}:{}", token.kind, filepath, token.row, token.col).unwrap();
+                    }
+                    
+                }
+            }
+            if !expected_path.exists() {
+                write(&expected_path, &result).unwrap();
+            }
+            let expected_path = expected_path.into_string().unwrap().replace("\\", "/");
+            let expected = read_to_string(&expected_path).unwrap();
+            let mut err_msg: Vec<String> = vec![];
+            if result != expected {
+                let lines = zip(result.lines(), expected.lines());
+                let mut i = 0;
+                for (a, b) in lines {
+                    i += 1;
+                    if a != b {
+                        err_msg.push(format!("\n\x1b[31mError:\x1b[0m {}:{}:{} expected: \n \"{}\" but got \n \"{}\"\n", &expected_path, i, 1, b, a));
+                    }
+                    
+                }
+                if !err_msg.is_empty() {
+
+                    failed_tests.push(format!("-----------------Testcase----------------"));
+                    failed_tests.append(&mut err_msg);
+                }
+            
+
+            }
+
+            result.clear();
+        }
+        if !failed_tests.is_empty() {
+            for test in failed_tests.iter() {
+                eprintln!("{}", test);
+            }
+            panic!();
+        }
+    }
+}
+
