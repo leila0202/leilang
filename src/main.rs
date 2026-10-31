@@ -6,15 +6,15 @@ use std::env;
 
 #[derive(Debug)]
 enum OpKind {
-    Ass,
+    Assign,
     Add,
-    AddAss,
+    AddAssign,
     Sub,
-    SubAss,
+    SubAssign,
     Mul,
-    MulAss,
+    MulAssign,
     Div,
-    DivAss,
+    DivAssign,
     Eq,
     Neq,
     Neg,
@@ -203,7 +203,7 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
                 }
                 else {
                     Token {
-                        kind: TokenKind::Op(OpKind::Ass),
+                        kind: TokenKind::Op(OpKind::Assign),
                         row: row_old,
                         col: col_old
                     }
@@ -215,7 +215,7 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
                     lexer.iter.next();
                     lexer.col += 1;
                         Token {
-                            kind: TokenKind::Op(OpKind::AddAss),
+                            kind: TokenKind::Op(OpKind::AddAssign),
                             row: row_old,
                             col: col_old
                         }
@@ -234,7 +234,7 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
                     lexer.iter.next();
                     lexer.col += 1;
                         Token {
-                            kind: TokenKind::Op(OpKind::SubAss),
+                            kind: TokenKind::Op(OpKind::SubAssign),
                             row: row_old,
                             col: col_old
                         }
@@ -253,7 +253,7 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
                     lexer.iter.next();
                     lexer.col += 1;
                         Token {
-                            kind: TokenKind::Op(OpKind::MulAss),
+                            kind: TokenKind::Op(OpKind::MulAssign),
                             row: row_old,
                             col: col_old
                         }
@@ -272,7 +272,7 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
                     lexer.iter.next();
                     lexer.col += 1;
                         Token {
-                            kind: TokenKind::Op(OpKind::DivAss),
+                            kind: TokenKind::Op(OpKind::DivAssign),
                             row: row_old,
                             col: col_old
                         }
