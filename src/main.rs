@@ -1,6 +1,5 @@
-use std::collections::HashMap;
 use std::process::exit;
-use std::{fmt::format, fs::read_to_string};
+use std::fs::read_to_string;
 use std::env;
 
 type CharStream<'b,'a> = &'a mut std::iter::Peekable<std::str::Chars<'b>>;
@@ -57,7 +56,7 @@ enum TokenKind {
     
 }
 
-#[derive(Debug)]
+
 struct Token {
     kind: TokenKind,
     row: usize,
@@ -69,72 +68,70 @@ const KEYWORDS: [&str;7] = ["int", "float", "if", "while", "for", "return", "cha
 
 
 fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
-    //println!("token_next aufgerufen");
+    let row_old = lexer.row;
+    let col_old = lexer.col;
 
     if let Some(c) = lexer.iter.next(){
-        let row_old = lexer.row;
-        let col_old = lexer.col;
-        //println!("lexer next aufgerufen");
-        lexer.row += 1;
+        
+        lexer.col += 1;
         match c {
             ' ' => {
-                lexer.row += 1;
                 token_next(lexer, filepath)
             }
 
             ',' => {
-                Token { kind: TokenKind::Colon, row: lexer.row, col: lexer.col }
+                Token { kind: TokenKind::Colon, row: row_old, col: col_old }
             }
 
             '"' => {
-                Token { kind: TokenKind::DQuote, row: lexer.row, col: lexer.col }
+                Token { kind: TokenKind::DQuote, row: row_old, col: col_old }
             }
 
              '\'' => {
-                Token { kind: TokenKind::Quote, row: lexer.row, col: lexer.col }
+                Token { kind: TokenKind::Quote, row: row_old, col: col_old }
             }
 
             '(' => {
-                Token { kind: TokenKind::OParen, row: lexer.row, col: lexer.col }
+                Token { kind: TokenKind::OParen, row: row_old, col: col_old }
             }
 
             ')' => {
-                Token { kind: TokenKind::CParen, row: lexer.row, col: lexer.col }
+                Token { kind: TokenKind::CParen, row: row_old, col: col_old }
             }
 
             '{' => {
-                Token { kind: TokenKind::OCurly, row: lexer.row, col: lexer.col }
+                Token { kind: TokenKind::OCurly, row: row_old, col: col_old }
             }
 
             '}' => {
-                Token { kind: TokenKind::CCurly, row: lexer.row, col: lexer.col }
+                Token { kind: TokenKind::CCurly, row: row_old, col: col_old }
             }
 
 
             '[' => {
-                Token { kind: TokenKind::OSquare, row: lexer.row, col: lexer.col }
+                Token { kind: TokenKind::OSquare, row: row_old, col: col_old }
             }
 
             ']' => {
-                Token { kind: TokenKind::CSquare, row: lexer.row, col: lexer.col }
+                Token { kind: TokenKind::CSquare, row: row_old, col: col_old }
             }
 
             '\r'  => {
                 if lexer.iter.peek() == Some(&'\n') {
                     lexer.iter.next();
-                    lexer.col +=1;
-                    lexer.row = 1;
+                    lexer.row += 1;
+                    lexer.col =  1;
                         Token {
                             kind: TokenKind::Newline,
-                            row: lexer.row,
-                            col: lexer.col
+                            row: row_old,
+                            col: col_old
                         }
                 } else {
-                    eprintln!("Error: {}:{}:{}: invalid Newline token", filepath, lexer.col, lexer.row);
+                    eprintln!("Error: {}:{}:{}: invalid Newline token", filepath, row_old, col_old);
                     Token {
                             kind: TokenKind::Error,
-                            row: lexer.row,
-                            col: lexer.col
+                            row: row_old,
+                            col: col_old
                         }
                 }
             }
@@ -142,18 +139,18 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
             '<' => {
                 if lexer.iter.peek() == Some(&'=') {
                     lexer.iter.next();
-                    lexer.row += 1;
+                    lexer.col += 1;
                         Token {
                             kind: TokenKind::Op(OpKind::Le),
-                            row: lexer.row,
-                            col: lexer.col
+                            row: row_old,
+                            col: col_old
                         }
                 }
                 else {
                     Token {
                         kind: TokenKind::Op(OpKind::Lt),
-                        row: lexer.row,
-                        col: lexer.col
+                        row: row_old,
+                        col: col_old
                     }
                 }
             }
@@ -161,18 +158,18 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
             '>' => {
                 if lexer.iter.peek() == Some(&'=') {
                     lexer.iter.next();
-                    lexer.row += 1;
+                    lexer.col += 1;
                         Token {
                             kind: TokenKind::Op(OpKind::Ge),
-                            row: lexer.row,
-                            col: lexer.col
+                            row: row_old,
+                            col: col_old
                         }
                 }
                 else {
                     Token {
                         kind: TokenKind::Op(OpKind::Gt),
-                        row: lexer.row,
-                        col: lexer.col
+                        row: row_old,
+                        col: col_old
                     }
                 }
             }
@@ -180,18 +177,18 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
             '!' => {
                 if lexer.iter.peek() == Some(&'=') {
                     lexer.iter.next();
-                    lexer.row += 1;
+                    lexer.col += 1;
                         Token {
                             kind: TokenKind::Op(OpKind::Neq),
-                            row: lexer.row,
-                            col: lexer.col
+                            row: row_old,
+                            col: col_old
                         }
                 }
                 else {
                     Token {
                         kind: TokenKind::Op(OpKind::Neg),
-                        row: lexer.row,
-                        col: lexer.col
+                        row: row_old,
+                        col: col_old
                     }
                 }
             }
@@ -199,18 +196,18 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
             '=' => {
                 if lexer.iter.peek() == Some(&'=') {
                     lexer.iter.next();
-                    lexer.row += 1;
+                    lexer.col += 1;
                         Token {
                             kind: TokenKind::Op(OpKind::Eq),
-                            row: lexer.row,
-                            col : lexer.col
+                            row: row_old,
+                            col : col_old
                         }
                 }
                 else {
                     Token {
                         kind: TokenKind::Op(OpKind::Ass),
-                        row: lexer.row,
-                        col: lexer.col
+                        row: row_old,
+                        col: col_old
                     }
                 }
             }
@@ -218,18 +215,18 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
             '+' => {
                 if lexer.iter.peek() == Some(&'=') {
                     lexer.iter.next();
-                    lexer.row += 1;
+                    lexer.col += 1;
                         Token {
                             kind: TokenKind::Op(OpKind::AddAss),
-                            row: lexer.row,
-                            col: lexer.col
+                            row: row_old,
+                            col: col_old
                         }
                 }
                 else {
                     Token {
                         kind: TokenKind::Op(OpKind::Add),
-                        row: lexer.row,
-                        col: lexer.col
+                        row: row_old,
+                        col: col_old
                     }
                 }
             }
@@ -237,18 +234,18 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
             '-' => {
                 if lexer.iter.peek() == Some(&'=') {
                     lexer.iter.next();
-                    lexer.row += 1;
+                    lexer.col += 1;
                         Token {
                             kind: TokenKind::Op(OpKind::SubAss),
-                            row: lexer.row,
-                            col: lexer.col
+                            row: row_old,
+                            col: col_old
                         }
                 }
                 else {
                     Token {
                         kind: TokenKind::Op(OpKind::Sub),
-                        row: lexer.row,
-                        col: lexer.col
+                        row: row_old,
+                        col: col_old
                     }
                 }
             }
@@ -256,17 +253,18 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
             '*' => {
                 if lexer.iter.peek() == Some(&'=') {
                     lexer.iter.next();
+                    lexer.col += 1;
                         Token {
                             kind: TokenKind::Op(OpKind::MulAss),
-                            row: lexer.row,
-                            col : lexer.col
+                            row: row_old,
+                            col: col_old
                         }
                 }
                 else {
                     Token {
                         kind: TokenKind::Op(OpKind::Mul),
-                        row: lexer.row,
-                        col: lexer.col
+                        row: row_old,
+                        col: col_old
                     }
                 }
             }
@@ -274,17 +272,18 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
             '/' => {
                 if lexer.iter.peek() == Some(&'=') {
                     lexer.iter.next();
+                    lexer.col += 1;
                         Token {
                             kind: TokenKind::Op(OpKind::DivAss),
-                            row: lexer.row,
-                            col : lexer.col
+                            row: row_old,
+                            col: col_old
                         }
                 }
                 else {
                     Token {
                         kind: TokenKind::Op(OpKind::Div),
-                        row: lexer.row,
-                        col: lexer.col
+                        row: row_old,
+                        col: col_old
                     }
                 }
             }
@@ -298,27 +297,35 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
                     
                     if let Some(digit) = lexer.iter.peek() {
                         if dot_count > 1 {
-                            eprintln!("Error: {}:{}:{} wrong formated float {}", filepath, lexer.row, lexer.col, final_digit);
-                            exit(-1);
+                            eprintln!("Error: {}:{}:{} wrong formated float {}", filepath, row_old, col_old + final_digit.len() - 1, final_digit);
+                            return Token {
+                            kind: TokenKind::Error,
+                            row: row_old,
+                            col: col_old
+                        }
                         }
                         if !digit.is_digit(10){
                             if digit == &'.'{
                                 is_float = true;
-                                //dot_count += 1;
+                                dot_count += 1;
                             }
                             else {
                                 break;
                             }
                         }
+
+                        
                         final_digit += &digit.to_string();
                         
                         lexer.iter.next();
+                        
 
                     }
                     else{
                         break;
                     }
                 }
+                lexer.col += final_digit.len() - 1;
 
                 let mut digit_kind = TypeKind::Float(final_digit.parse::<f64>().unwrap());
 
@@ -328,8 +335,8 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
                 }
                 Token { 
                     kind: TokenKind::Type(digit_kind), 
-                    row: lexer.row,
-                    col: lexer.col 
+                    row: row_old,
+                    col: col_old 
                 }
             }
 
@@ -350,7 +357,7 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
                     }
                 }
                 let kind;
-                lexer.row += final_char.len()-1;
+                lexer.col += final_char.len()-1;
                 if KEYWORDS.contains(&final_char.as_str()) {
                     kind = TokenKind::Keyword(final_char);
                     
@@ -358,14 +365,14 @@ fn token_next(lexer: &mut Lexer, filepath: &String) -> Token {
                     kind = TokenKind::Ident(final_char);
                 }
                 
-                Token { kind: kind, row: lexer.row, col: lexer.col }
+                Token { kind: kind, row: row_old, col: col_old }
             }
             _ => {
-                Token { kind: TokenKind::Unknown(c.to_string()), row: lexer.row, col: lexer.col}
+                Token { kind: TokenKind::Unknown(c.to_string()), row: row_old, col: col_old}
             }
         }
     } else {
-        return Token { kind: TokenKind::Eof,  row: lexer.row, col: lexer.col}
+        return Token { kind: TokenKind::Eof,  row: row_old, col: col_old}
     }
 
 }
@@ -400,7 +407,7 @@ fn main() {
                 break;
             }
             _ => {
-                println!("{:?} located at {}:{}:{}", token.kind, filepath, token.col, token.row);
+                println!("{:?} located at {}:{}:{}", token.kind, filepath, token.row, token.col);
             }
              
         }
