@@ -1,5 +1,5 @@
 int result = 50 + 20
-while (counter_1)
+while (coun)ter_1)
 {
     char x = 1
 }
