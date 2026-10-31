@@ -1,0 +1,4 @@
+Keyword("float") located at ./tests/invalid_float.lei:1:1
+Ident("bad") located at ./tests/invalid_float.lei:1:7
+Op(Ass) located at ./tests/invalid_float.lei:1:11
+Error located at ./tests/invalid_float.lei:1:13

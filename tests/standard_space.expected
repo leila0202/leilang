@@ -1,0 +1,7 @@
+Keyword("int") located at ./tests/standard_space.lei:1:1
+Ident("a_ge_12") located at ./tests/standard_space.lei:1:28
+Op(Ass) located at ./tests/standard_space.lei:1:36
+Type(Int(20)) located at ./tests/standard_space.lei:1:38
+Newline located at ./tests/standard_space.lei:1:40
+Keyword("char") located at ./tests/standard_space.lei:2:1
+Type(Int(222)) located at ./tests/standard_space.lei:2:6
