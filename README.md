@@ -28,13 +28,17 @@ TBD
 
 ### Prerequisites
 
-- Rust toolchain (`cargo`, `rustc`)
+- Rust toolchain (`cargo`, `rustc`) (only if you want to run it via cargo)
 - Windows environment with UCRT64 support
 
 ### Running the Compiler
 
-To compile a `.lei` source file, place your code in `test.lei` and run the compiler via Cargo:
+To compile a `.lei` source file, place your code in a `.lei` file and run the compiler via Cargo or directly via the exectuable:
 
 ```bash
-cargo run
+cargo run filepath.lei
+```
+or
+```bash
+./leilang filepath.lei
 ```
